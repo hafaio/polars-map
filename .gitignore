@@ -1,0 +1,13 @@
+__pycache__/
+.coverage
+.venv
+*.egg-info
+*.pyo
+*.pyc
+*.so
+*.dylib
+build/
+dist/
+out/
+target/
+wheels/
