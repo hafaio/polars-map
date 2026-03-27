@@ -11,3 +11,5 @@ dist/
 out/
 target/
 wheels/
+.direnv
+.envrc

@@ -34,3 +34,5 @@ convention = "numpy"
 [tool.pyright]
 include = ["polars_map", "tests"]
 strict = ["polars_map", "tests"]
+venvPath = "."
+venv = ".venv"
