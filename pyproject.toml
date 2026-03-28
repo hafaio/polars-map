@@ -1,6 +1,6 @@
 [project]
 name = "polars-map"
-version = "0.1.0"
+version = "0.1.1"
 description = "Polars plugin providing Map operations on List(Struct({key, value})) columns"
 requires-python = ">=3.10"
 dependencies = ["polars>=1.36"]
