@@ -32,6 +32,12 @@ def test_get(map_series: pl.Series) -> None:
     assert ser.to_list() == [1, None, None, None]
 
 
+def test_getitem(map_series: pl.Series) -> None:
+    """Verify __getitem__ forwards to get for a single key."""
+    ser = smap(map_series)["a"]
+    assert ser.to_list() == [1, None, None, None]
+
+
 def test_get_multi(map_series: pl.Series) -> None:
     """Verify get with multiple keys returns multiple columns."""
     [a_ser, z_ser] = smap(map_series).get("a", "z")

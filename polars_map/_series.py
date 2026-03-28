@@ -87,6 +87,10 @@ class MapSeries:
         else:
             return self._get(key)
 
+    def __getitem__(self, key: object) -> pl.Series:
+        """Look up a value by key. Returns scalar per row."""
+        return self._get(key)
+
     def contains_key(self, key: object) -> pl.Series:
         """Check if a key exists in the map."""
         return self._entries.list.eval(pl.element().struct["key"] == key).list.any()
