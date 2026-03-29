@@ -33,6 +33,12 @@ def test_get(map_frame: pl.DataFrame) -> None:
     assert ser.to_list() == [1, None, None, None]
 
 
+def test_getitem(map_frame: pl.DataFrame) -> None:
+    """Verify __getitem__ forwards to get for a single key."""
+    [ser] = map_frame.select(emap(pl.col("map"))["a"])  # pyright: ignore[reportUnknownMemberType]
+    assert ser.to_list() == [1, None, None, None]
+
+
 def test_get_multi(map_frame: pl.DataFrame) -> None:
     """Verify get with multiple keys returns multiple columns."""
     [a_ser, z_ser] = map_frame.select(  # pyright: ignore[reportUnknownMemberType]
