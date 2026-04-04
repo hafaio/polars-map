@@ -226,3 +226,31 @@ def test_difference() -> None:
     keys = [e["key"] for e in vals]
     assert keys == ["b"]
     assert vals[0]["value"] == 2  # noqa: PLR2004
+
+
+def test_eval(map_series: pl.Series) -> None:
+    """Verify eval transforms entries and preserves Map type."""
+    result = smap(map_series).eval(
+        pl.element().struct.with_fields(  # pyright: ignore[reportUnknownMemberType]
+            value=pl.element().struct["value"] * 2
+        )
+    )
+    assert isinstance(result.dtype, Map)
+    vals = result.ext.storage().to_list()[0]
+    val_dict = {e["key"]: e["value"] for e in vals}
+    assert val_dict == {"a": 2, "b": 4, "c": 6}
+
+
+def test_iter(map_series: pl.Series) -> None:
+    """Verify __iter__ yields dicts for rows, None for nulls."""
+    rows = [*smap(map_series)]
+    assert rows[0] == {"a": 1, "b": 2, "c": 3}
+    assert rows[1] == {"x": 10}
+    assert rows[2] is None
+    assert rows[3] == {}
+
+
+def test_to_list(map_series: pl.Series) -> None:
+    """Verify to_list returns list of dicts."""
+    result = smap(map_series).to_list()
+    assert result == [{"a": 1, "b": 2, "c": 3}, {"x": 10}, None, {}]

@@ -245,3 +245,18 @@ def test_difference() -> None:
     keys = [e["key"] for e in vals]
     assert keys == ["b"]
     assert vals[0]["value"] == 2  # noqa: PLR2004
+
+
+def test_eval(map_frame: pl.DataFrame) -> None:
+    """Verify eval transforms entries and preserves Map type."""
+    [ser] = map_frame.select(  # pyright: ignore[reportUnknownMemberType]
+        emap(pl.col("map")).eval(
+            pl.element().struct.with_fields(  # pyright: ignore[reportUnknownMemberType]
+                value=pl.element().struct["value"] * 2
+            )
+        )
+    )
+    assert isinstance(ser.dtype, Map)
+    vals = ser.ext.storage().to_list()[0]
+    val_dict = {e["key"]: e["value"] for e in vals}
+    assert val_dict == {"a": 2, "b": 4, "c": 6}

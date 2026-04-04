@@ -3,7 +3,7 @@ name = "polars-map"
 version = "0.2.0"
 description = "Polars plugin providing Map operations on List(Struct({key, value})) columns"
 requires-python = ">=3.10"
-dependencies = ["polars>=1.36"]
+dependencies = ["polars>=1.36", "pyarrow>=7.0"]
 readme = "README.md"
 license = "MIT"
 classifiers = [
@@ -19,7 +19,13 @@ Repository = "https://github.com/hafaio/polars-map"
 Issues = "https://github.com/hafaio/polars-map/issues"
 
 [dependency-groups]
-dev = ["pyright>=1.1", "pytest>=8.3", "pytest-cov>=7.1", "ruff>=0.11"]
+dev = [
+    "pyarrow-stubs>=7.0",
+    "pyright>=1.1",
+    "pytest>=8.3",
+    "pytest-cov>=7.1",
+    "ruff>=0.11",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -34,3 +40,6 @@ convention = "numpy"
 [tool.pyright]
 include = ["polars_map", "tests"]
 strict = ["polars_map", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report term-missing"
