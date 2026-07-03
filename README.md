@@ -87,8 +87,15 @@ pl.DataFrame([left, right]).select(pl.col("l").map.intersection(pl.col("r")))  #
 pl.DataFrame([left, right]).select(pl.col("l").map.difference(pl.col("r")))    # keys only in left
 
 # Convert to/from plain List(Struct)
-df.select(pl.col("m").map.entries())        # strip Map type
-df.select(pl.col("m").map.from_entries())   # wrap as Map (with deduplication)
+df.select(pl.col("m").map.entries())   # strip Map -> List(Struct)
+
+# from_entries is the inverse: it wraps a raw List(Struct) column into a Map
+entries = pl.Series(
+    "e",
+    [[{"key": "a", "value": 1}, {"key": "a", "value": 2}]],
+    dtype=pl.List(pl.Struct({"key": pl.String, "value": pl.Int64})),
+)
+pl.DataFrame([entries]).select(pl.col("e").map.from_entries())  # Map, deduped to {"a": 1}
 
 # Series iteration yields Python dicts
 for d in ser.map:
