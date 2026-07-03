@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from ._utils import expr_eval, infer_map, validate
+from ._utils import dedup, expr_eval, infer_map, validate
 
 
 @pl.api.register_expr_namespace("map")
@@ -37,16 +37,12 @@ class MapExpr:
         parallel
             Run list evaluations in parallel.
         """
-        return infer_map(
-            self._expr.list.eval(
-                validate(
-                    pl.element(),
-                    validate_fields=validate_fields,
-                    deduplicate=deduplicate,
-                ),
-                parallel=parallel,
-            )
-        )
+        entries = self._expr
+        if validate_fields:
+            entries = entries.list.eval(validate(pl.element()), parallel=parallel)
+        if deduplicate:
+            entries = entries.list.eval(dedup(), parallel=parallel)
+        return infer_map(entries)
 
     @functools.cached_property
     def _entries(self) -> pl.Expr:
@@ -114,8 +110,11 @@ class MapExpr:
         -------
         >>> col.map.eval(pl.element().struct.with_fields(pl.element().struct["value"] * 2))
         """
-        inner = validate(expr, validate_fields=validate_fields, deduplicate=deduplicate)
-        return infer_map(self._entries.list.eval(inner, parallel=parallel))
+        inner = validate(expr) if validate_fields else expr
+        evaled = self._entries.list.eval(inner, parallel=parallel)
+        if deduplicate:
+            evaled = evaled.list.eval(dedup(), parallel=parallel)
+        return infer_map(evaled)
 
     def eval_keys(
         self, expr: pl.Expr, *, deduplicate: bool = True, parallel: bool = False
@@ -131,9 +130,10 @@ class MapExpr:
         inner: pl.Expr = pl.element().struct.with_fields(  # pyright: ignore[reportUnknownMemberType]
             key=expr_eval(pl.element().struct["key"], expr)
         )
+        evaled = self._entries.list.eval(inner, parallel=parallel)
         if deduplicate:
-            inner = inner.filter(pl.element().struct["key"].is_first_distinct())
-        return infer_map(self._entries.list.eval(inner, parallel=parallel))
+            evaled = evaled.list.eval(dedup(), parallel=parallel)
+        return infer_map(evaled)
 
     def eval_values(self, expr: pl.Expr, *, parallel: bool = False) -> pl.Expr:
         """Transform values, returning a Map with new value type.

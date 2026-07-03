@@ -117,6 +117,17 @@ def test_from_entries() -> None:
     assert isinstance(result.dtype, Map)
 
 
+def test_eval_keys_dedup_collapsing() -> None:
+    """Verify eval_keys deduplicates on the transformed key, keeping the first."""
+    ser = pl.Series(
+        "map",
+        [[{"key": "a", "value": 1}, {"key": "A", "value": 2}]],
+        dtype=Map(pl.String(), pl.Int64()),
+    )
+    result = smap(ser).eval_keys(pl.element().str.to_uppercase())
+    assert result.ext.storage().to_list()[0] == [{"key": "A", "value": 1}]
+
+
 def test_from_entries_validate_fields_preserves_null() -> None:
     """Verify validate_fields keeps null entries null instead of fabricating fields."""
     ser = pl.Series(
