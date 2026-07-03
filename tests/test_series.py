@@ -142,6 +142,18 @@ def test_from_entries_no_deduplicate() -> None:
     assert len(vals) == 2  # noqa: PLR2004
 
 
+def test_from_entries_on_map_is_idempotent() -> None:
+    """Verify from_entries works on an already-Map column, re-deduplicating."""
+    ser = pl.Series(
+        "map",
+        [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+        dtype=Map(pl.String(), pl.Int64()),
+    )
+    result = smap(ser).from_entries()
+    assert isinstance(result.dtype, Map)
+    assert result.ext.storage().to_list() == ser.ext.storage().to_list()
+
+
 def test_filter_on_plain_list_returns_map() -> None:
     """Verify Series filter accepts plain List(Struct) input and returns a Map."""
     ser = pl.Series(

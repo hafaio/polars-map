@@ -247,6 +247,19 @@ def test_difference() -> None:
     assert vals[0]["value"] == 2  # noqa: PLR2004
 
 
+def test_from_entries_on_map_is_idempotent() -> None:
+    """Verify from_entries works on an already-Map column, re-deduplicating."""
+    ser = pl.Series(
+        "map",
+        [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+        dtype=Map(pl.String(), pl.Int64()),
+    )
+    frame = pl.DataFrame([ser])
+    [result] = frame.select(emap(pl.col("map")).from_entries())  # pyright: ignore[reportUnknownMemberType]
+    assert isinstance(result.dtype, Map)
+    assert result.ext.storage().to_list() == ser.ext.storage().to_list()
+
+
 def test_eval(map_frame: pl.DataFrame) -> None:
     """Verify eval transforms entries and preserves Map type."""
     [ser] = map_frame.select(  # pyright: ignore[reportUnknownMemberType]

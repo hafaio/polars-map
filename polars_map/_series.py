@@ -40,7 +40,7 @@ class MapSeries:
             validate_fields=validate_fields,
             deduplicate=deduplicate,
         )
-        return tag(self._series.list.eval(inner, parallel=parallel))
+        return tag(self._entries.list.eval(inner, parallel=parallel))
 
     @functools.cached_property
     def _entries(self) -> pl.Series:

@@ -38,7 +38,7 @@ class MapExpr:
             Run list evaluations in parallel.
         """
         return infer_map(
-            self._expr.list.eval(
+            self._entries.list.eval(
                 validate(
                     pl.element(),
                     validate_fields=validate_fields,
