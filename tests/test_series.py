@@ -117,6 +117,17 @@ def test_from_entries() -> None:
     assert isinstance(result.dtype, Map)
 
 
+def test_from_entries_validate_fields_preserves_null() -> None:
+    """Verify validate_fields keeps null entries null instead of fabricating fields."""
+    ser = pl.Series(
+        "map",
+        [[{"key": "a", "value": 1}, None]],
+        dtype=pl.List(pl.Struct({"key": pl.String, "value": pl.Int64})),
+    )
+    result = smap(ser).from_entries()
+    assert result.ext.storage().to_list()[0] == [{"key": "a", "value": 1}, None]
+
+
 def test_from_entries_deduplicates_by_default() -> None:
     """Verify from_entries deduplicates keys, keeping first."""
     ser = pl.Series(
