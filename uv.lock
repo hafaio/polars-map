@@ -210,12 +210,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "polars", specifier = ">=1.36" },
-    { name = "pyarrow", specifier = ">=7.0" },
+    { name = "pyarrow", specifier = ">=17.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pyarrow-stubs", specifier = ">=7.0" },
+    { name = "pyarrow-stubs", specifier = ">=17.0" },
     { name = "pyright", specifier = ">=1.1" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-cov", specifier = ">=7.1" },
