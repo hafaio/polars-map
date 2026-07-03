@@ -18,18 +18,27 @@ def infer_map(expr: pl.Expr) -> pl.Expr:
     return expr.map_batches(tag, is_elementwise=True)
 
 
-def validate(expr: pl.Expr, *, validate_fields: bool, deduplicate: bool) -> pl.Expr:
-    """Validate and deduplicate a list.eval interior expression."""
-    if validate_fields:
-        rebuilt = pl.struct(  # pyright: ignore[reportUnknownMemberType]
-            expr.struct["key"].alias("key"),
-            expr.struct["value"].alias("value"),
-        )
-        # preseve nulls
-        expr = pl.when(expr.is_null()).then(None).otherwise(rebuilt)  # pyright: ignore[reportUnknownMemberType]
-    if deduplicate:
-        expr = expr.filter(pl.element().struct["key"].is_first_distinct())
-    return expr
+def validate(expr: pl.Expr) -> pl.Expr:
+    """Rebuild each entry as a clean ``{key, value}`` struct, preserving null entries.
+
+    A null element stays null rather than becoming a non-null struct with null
+    key and value fields.
+    """
+    rebuilt = pl.struct(  # pyright: ignore[reportUnknownMemberType]
+        expr.struct["key"].alias("key"),
+        expr.struct["value"].alias("value"),
+    )
+    # preserve nulls
+    return pl.when(expr.is_null()).then(None).otherwise(rebuilt)  # pyright: ignore[reportUnknownMemberType]
+
+
+def dedup() -> pl.Expr:
+    """Interior ``list.eval`` expr keeping the first entry for each distinct key.
+
+    Applied as a second pass over already-transformed entries so ``pl.element()``
+    refers to the transformed keys, not the pre-transform ones.
+    """
+    return pl.element().filter(pl.element().struct["key"].is_first_distinct())
 
 
 def expr_eval(expr: pl.Expr, evaled: pl.Expr) -> pl.Expr:

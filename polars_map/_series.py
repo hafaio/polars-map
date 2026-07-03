@@ -9,7 +9,7 @@ from typing import Any, overload
 
 import polars as pl
 
-from ._utils import expr_eval, tag, validate
+from ._utils import dedup, expr_eval, tag, validate
 
 
 @pl.api.register_series_namespace("map")
@@ -35,12 +35,12 @@ class MapSeries:
         parallel
             Run list evaluations in parallel.
         """
-        inner = validate(
-            pl.element(),
-            validate_fields=validate_fields,
-            deduplicate=deduplicate,
-        )
-        return tag(self._series.list.eval(inner, parallel=parallel))
+        entries = self._series
+        if validate_fields:
+            entries = entries.list.eval(validate(pl.element()), parallel=parallel)
+        if deduplicate:
+            entries = entries.list.eval(dedup(), parallel=parallel)
+        return tag(entries)
 
     @functools.cached_property
     def _entries(self) -> pl.Series:
@@ -104,8 +104,11 @@ class MapSeries:
         parallel: bool = False,
     ) -> pl.Series:
         """Evaluate an expression on entries, returning a Map."""
-        inner = validate(expr, validate_fields=validate_fields, deduplicate=deduplicate)
-        return tag(self._entries.list.eval(inner, parallel=parallel))
+        inner = validate(expr) if validate_fields else expr
+        evaled = self._entries.list.eval(inner, parallel=parallel)
+        if deduplicate:
+            evaled = evaled.list.eval(dedup(), parallel=parallel)
+        return tag(evaled)
 
     def eval_keys(
         self, expr: pl.Expr, *, deduplicate: bool = True, parallel: bool = False
@@ -114,9 +117,10 @@ class MapSeries:
         inner: pl.Expr = pl.element().struct.with_fields(  # pyright: ignore[reportUnknownMemberType]
             key=expr_eval(pl.element().struct["key"], expr)
         )
+        evaled = self._entries.list.eval(inner, parallel=parallel)
         if deduplicate:
-            inner = inner.filter(pl.element().struct["key"].is_first_distinct())
-        return tag(self._entries.list.eval(inner, parallel=parallel))
+            evaled = evaled.list.eval(dedup(), parallel=parallel)
+        return tag(evaled)
 
     def eval_values(self, expr: pl.Expr, *, parallel: bool = False) -> pl.Series:
         """Transform values, returning a Map with new value type."""
