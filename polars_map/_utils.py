@@ -21,10 +21,12 @@ def infer_map(expr: pl.Expr) -> pl.Expr:
 def validate(expr: pl.Expr, *, validate_fields: bool, deduplicate: bool) -> pl.Expr:
     """Validate and deduplicate a list.eval interior expression."""
     if validate_fields:
-        expr = pl.struct(  # pyright: ignore[reportUnknownMemberType]
+        rebuilt = pl.struct(  # pyright: ignore[reportUnknownMemberType]
             expr.struct["key"].alias("key"),
             expr.struct["value"].alias("value"),
         )
+        # preseve nulls
+        expr = pl.when(expr.is_null()).then(None).otherwise(rebuilt)  # pyright: ignore[reportUnknownMemberType]
     if deduplicate:
         expr = expr.filter(pl.element().struct["key"].is_first_distinct())
     return expr
