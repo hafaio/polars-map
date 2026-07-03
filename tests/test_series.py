@@ -142,6 +142,19 @@ def test_from_entries_no_deduplicate() -> None:
     assert len(vals) == 2  # noqa: PLR2004
 
 
+def test_filter_on_plain_list_returns_map() -> None:
+    """Verify Series filter accepts plain List(Struct) input and returns a Map."""
+    ser = pl.Series(
+        "map",
+        [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+        dtype=pl.List(pl.Struct({"key": pl.String, "value": pl.Int64})),
+    )
+    result = smap(ser).filter(pl.element().struct["value"] > 1)
+    assert isinstance(result.dtype, Map)
+    keys = [entry["key"] for entry in result.ext.storage().to_list()[0]]
+    assert keys == ["b"]
+
+
 def test_merge_no_overlap() -> None:
     """Verify merge combines non-overlapping maps and retains Map dtype."""
     left = pl.Series(

@@ -5,8 +5,13 @@
 
 Polars plugin providing a Map extension type and functions.
 Maps represent a mapping from unique keys of any type to values, and are stored as `List(Struct({key, value}))` columns.
-All function in the `.map` namespace can be used on the extension type or on the
-underlying list.
+Most functions in the `.map` namespace accept either the `Map` extension type or the
+underlying `List(Struct)`. The type-preserving methods (`filter`, `filter_keys`,
+`filter_values`, `merge`, `intersection`, `difference`) don't remap the key or value
+types, so they reuse the input's dtype instead of re-inferring it (which would lock the
+GIL). On the expression API that reuse requires the `Map` extension as input; cast a plain
+`List(Struct)` first if needed, e.g. with `.map.from_entries()`. The equivalent `Series`
+methods accept either.
 
 ## Installation
 
