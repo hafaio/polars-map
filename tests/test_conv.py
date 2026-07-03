@@ -478,3 +478,10 @@ def test_scan_arrow_collect_twice() -> None:
     frame2 = lf.collect()
     assert frame1.equals(frame2)
     assert call_count == 2  # noqa: PLR2004
+
+
+def test_scan_arrow_empty_source() -> None:
+    """A source yielding no batches raises a descriptive error, not StopIteration."""
+    lf = scan_arrow(lambda: [])
+    with pytest.raises(pl.exceptions.ComputeError, match="no batches"):
+        lf.collect()

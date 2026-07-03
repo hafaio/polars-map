@@ -326,7 +326,12 @@ def scan_arrow(
             return schema
 
         it = polars_source()
-        first = next(it)
+        try:
+            first = next(it)
+        except StopIteration:
+            raise ValueError(
+                "scan_arrow source produced no batches; cannot infer schema"
+            ) from None
         lazy = itertools.chain([first], it)
         schema = first.schema
         return schema
