@@ -116,4 +116,4 @@ result = lf.collect()
 - **Extension types** — used to wrap the underlying `List(Struct)` storage with a semantic `Map` dtype, are not yet stabilized and may change across Polars releases.
 - **`pl.dtype_of`** — used to efficiently cast to the extension type after _some_ operations is also unstable.
 - **GIL** - is required to automatically wrap an expression as the extension type, and so operations which could change the underlying key or value types will briefly lock the GIL to do the cast. This may also prevent the polars engine from reasoning about the type.
-- **LongMap** - arrow currently only support Map, not LongMap. Polars generlly uses LongList, but if a frame is every converted to arrow with offsets that don't fit in a u32, this will exproting will error.
+- **Large offsets** — Arrow's `map<>` type uses only 32-bit offsets, so exporting a Polars map backed by a `LargeList` whose offsets don't fit in a `u32` will error. Arrow has no large-offset map type.
