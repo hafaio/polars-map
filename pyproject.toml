@@ -6,6 +6,7 @@ requires-python = ">=3.10"
 dependencies = ["polars>=1.36", "pyarrow>=17.0"]
 readme = "README.md"
 license = "MIT"
+keywords = ["polars", "polars-plugin", "map", "arrow", "extension-type"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -16,6 +17,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/hafaio/polars-map"
 Repository = "https://github.com/hafaio/polars-map"
+Documentation = "https://github.com/hafaio/polars-map#readme"
 Issues = "https://github.com/hafaio/polars-map/issues"
 
 [dependency-groups]
