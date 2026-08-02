@@ -1,7 +1,7 @@
 """Sphinx conf."""
 
 import sys
-from datetime import date
+from datetime import UTC, datetime
 from importlib.metadata import version as package_version
 from os import path
 
@@ -18,5 +18,5 @@ project = "polars-map"
 version = package_version(project)
 release = version
 
-copyright = f"{date.today().year:d} Erik Brinkman"  # noqa: A001
+copyright = f"{datetime.now(UTC).year:d} Erik Brinkman"  # noqa: A001
 author = "Erik Brinkman"

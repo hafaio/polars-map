@@ -482,6 +482,6 @@ def test_scan_arrow_collect_twice() -> None:
 
 def test_scan_arrow_empty_source() -> None:
     """A source yielding no batches raises a descriptive error, not StopIteration."""
-    lf = scan_arrow(lambda: [])
+    lf = scan_arrow(list)
     with pytest.raises(pl.exceptions.ComputeError, match="no batches"):
         lf.collect()

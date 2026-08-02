@@ -57,7 +57,7 @@ def _apply_array(inner_expr: pl.Expr, width: int, expr: pl.Expr) -> pl.Expr:
 
 
 @lru_cache
-def _from_arrow_walk(  # noqa: PLR0911, PLR0912
+def _from_arrow_walk(  # noqa: PLR0912
     arrow_type: pa.DataType,
 ) -> tuple[pa.DataType, pl.DataType, FromConv] | None:
     """Walk an arrow type, returning a cast target, polars dtype, and expression converter.
@@ -254,7 +254,7 @@ def _to_array(inner_conv: ToConv, list_size: int, arr: Array) -> Array:
 
 
 @lru_cache
-def _to_conv(dtype: pl.DataType | type[pl.DataType]) -> ToConv | None:  # noqa: PLR0911
+def _to_conv(dtype: pl.DataType | type[pl.DataType]) -> ToConv | None:
     """Build a function that converts an arrow array's list<struct> to map<>.
 
     Returns None if no Map types are present.
