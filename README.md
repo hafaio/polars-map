@@ -59,12 +59,12 @@ ser = pl.Series(
 df = pl.DataFrame([ser])
 
 # Accessors
-df.select(pl.col("m").map.keys())    # [["a", "b"], ["x"]]
+df.select(pl.col("m").map.keys())  # [["a", "b"], ["x"]]
 df.select(pl.col("m").map.values())  # [[1, 2], [10]]
-df.select(pl.col("m").map.len())     # [2, 1]
+df.select(pl.col("m").map.len())  # [2, 1]
 
 # Lookup
-df.select(pl.col("m").map.get("a"))           # [1, None]
+df.select(pl.col("m").map.get("a"))  # [1, None]
 df.select(pl.col("m").map.contains_key("a"))  # [True, False]
 
 # Filtering
@@ -77,17 +77,26 @@ df.select(pl.col("m").map.eval_keys(pl.element().str.to_uppercase()))
 df.select(pl.col("m").map.eval_values(pl.element() * 2))
 
 # Merge (right-side wins on key conflict)
-left = pl.Series("l", [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]], dtype=Map(pl.String(), pl.Int64()))
-right = pl.Series("r", [[{"key": "a", "value": 99}, {"key": "c", "value": 3}]], dtype=Map(pl.String(), pl.Int64()))
-pl.DataFrame([left, right]).select(pl.col("l").map.merge(pl.col("r")))
+left = pl.Series(
+    "l",
+    [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+    dtype=Map(pl.String(), pl.Int64()),
+)
+right = pl.Series(
+    "r",
+    [[{"key": "a", "value": 99}, {"key": "c", "value": 3}]],
+    dtype=Map(pl.String(), pl.Int64()),
+)
+pair = pl.DataFrame([left, right])
+pair.select(pl.col("l").map.merge(pl.col("r")))
 # [{"a": 99, "b": 2, "c": 3}]
 
 # Set operations
-pl.DataFrame([left, right]).select(pl.col("l").map.intersection(pl.col("r")))  # keys in both
-pl.DataFrame([left, right]).select(pl.col("l").map.difference(pl.col("r")))    # keys only in left
+pair.select(pl.col("l").map.intersection(pl.col("r")))  # keys in both
+pair.select(pl.col("l").map.difference(pl.col("r")))  # keys only in left
 
 # Convert to/from plain List(Struct)
-df.select(pl.col("m").map.entries())   # strip Map -> List(Struct)
+df.select(pl.col("m").map.entries())  # strip Map -> List(Struct)
 
 # from_entries is the inverse: it wraps a raw List(Struct) column into a Map
 entries = pl.Series(
@@ -95,7 +104,7 @@ entries = pl.Series(
     [[{"key": "a", "value": 1}, {"key": "a", "value": 2}]],
     dtype=pl.List(pl.Struct({"key": pl.String, "value": pl.Int64})),
 )
-pl.DataFrame([entries]).select(pl.col("e").map.from_entries())  # Map, deduped to {"a": 1}
+pl.DataFrame([entries]).select(pl.col("e").map.from_entries())  # {"a": 1}
 
 # Series iteration yields Python dicts
 for d in ser.map:
@@ -103,8 +112,8 @@ for d in ser.map:
 
 # Arrow table with map column → Polars DataFrame
 table = pa.table({"m": pa.array([[("a", 1)]], type=pa.map_(pa.string(), pa.int64()))})
-df = from_arrow(table)          # Map(String, Int64) dtype preserved
-table2 = to_arrow(df)           # roundtrips back to arrow map<>
+df = from_arrow(table)  # Map(String, Int64) dtype preserved
+table2 = to_arrow(df)  # roundtrips back to arrow map<>
 
 # Lazy scanning from an Arrow source
 lf = scan_arrow(lambda: [table])
